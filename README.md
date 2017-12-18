@@ -35,8 +35,8 @@ function myProtectedFunction() auth {}
 
 ### API
 
-#### `setOwner(address owner_)` 
+#### `setOwner(address owner)` 
 Set a new `owner` (requires auth)
 
-#### `setAuthority(DSAuthority authority_)` 
+#### `setAuthority(DSAuthority authorit_)` 
 Set a new `authority` (requires auth)

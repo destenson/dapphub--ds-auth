@@ -11,12 +11,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.16;
 
 contract DSAuthority {
-    function canCall(
-        address src, address dst, bytes4 sig
-    ) public view returns (bool);
+    // Can msg.sender (src) call a function (sig) on contract (dst)?
+    function canCall(address src, address dst, bytes4 sig) public view returns (bool);
 }
 
 contract DSAuthEvents {
@@ -25,27 +24,23 @@ contract DSAuthEvents {
 }
 
 contract DSAuth is DSAuthEvents {
-    DSAuthority  public  authority;
-    address      public  owner;
+    DSAuthority public _authority;
+    address private _owner;
 
     function DSAuth() public {
-        owner = msg.sender;
-        LogSetOwner(msg.sender);
+        setOwner(msg.sender);
     }
 
-    function setOwner(address owner_)
-        public
-        auth
-    {
-        owner = owner_;
+    function owner() public view returns (address) { return _owner; }
+    function authority() public view returns (address) { return _authority; }
+
+    function setOwner(address owner) public auth {
+        _owner = owner;
         LogSetOwner(owner);
     }
 
-    function setAuthority(DSAuthority authority_)
-        public
-        auth
-    {
-        authority = authority_;
+    function setAuthority(DSAuthority authority) public auth {
+        _authority = authority;
         LogSetAuthority(authority);
     }
 
@@ -55,14 +50,6 @@ contract DSAuth is DSAuthEvents {
     }
 
     function isAuthorized(address src, bytes4 sig) internal view returns (bool) {
-        if (src == address(this)) {
-            return true;
-        } else if (src == owner) {
-            return true;
-        } else if (authority == DSAuthority(0)) {
-            return false;
-        } else {
-            return authority.canCall(src, this, sig);
-        }
+        return (src == address(this)) || (src == _owner) || (DSAuthority(0) != _authority) || _authority.canCall(src, this, sig);
     }
 }
